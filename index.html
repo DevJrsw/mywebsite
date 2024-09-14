@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What movie should I watch?</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        #movie-info {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>What movie should I watch?</h1>
+        <button id="get-movie">Get Random Movie</button>
+        <div id="movie-info"></div>
+    </div>
+
+    <script>
+        const apiKey = 'cf0f8da2'; // Replace with your actual OMDB API key
+        const getMovieButton = document.getElementById('get-movie');
+        const movieInfo = document.getElementById('movie-info');
+
+        getMovieButton.addEventListener('click', getRandomMovie);
+
+        function getRandomMovie() {
+            const randomImdbId = generateRandomImdbId();
+            fetch(`https://www.omdbapi.com/?i=${randomImdbId}&apikey=${apiKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.Response === "True") {
+                        displayMovie(data);
+                    } else {
+                        getRandomMovie(); // Try again if the random ID doesn't exist
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    movieInfo.innerHTML = 'An error occurred. Please try again.';
+                });
+        }
+
+        function generateRandomImdbId() {
+            const prefix = 'tt';
+            const randomDigits = Math.floor(Math.random() * 2500000) + 1;
+            return `${prefix}${randomDigits.toString().padStart(7, '0')}`;
+        }
+
+        function displayMovie(movie) {
+            movieInfo.innerHTML = `
+                <h2>${movie.Title} (${movie.Year})</h2>
+                <img src="${movie.Poster}" alt="${movie.Title} Poster" onerror="this.src='/api/placeholder/300/445'">
+                <p><strong>Director:</strong> ${movie.Director}</p>
+                <p><strong>Actors:</strong> ${movie.Actors}</p>
+                <p><strong>Plot:</strong> ${movie.Plot}</p>
+                <p><strong>IMDb Rating:</strong> ${movie.imdbRating}</p>
+            `;
+        }
+    </script>
+</body>
+</html>
