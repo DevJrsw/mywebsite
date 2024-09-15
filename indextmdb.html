@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What movie should I watch?</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        #movie-info {
+            margin-top: 20px;
+        }
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        #popup {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>What movie should I watch?</h1>
+        <button id="get-movie" class="button">Get Random Movie </button>
+        <button id="support-button" class="button">Support Me</button>
+        <div id="movie-info"></div>
+
+        <div id="overlay">
+            <div id="popup">
+                <h2>Support This Project</h2>
+                <p>Thank you for your interest in supporting this project! Your support helps keep this service running.</p>
+                <p>You can support me by:</p>
+                <ul>
+                    <li>Sharing this website with your friends</li>
+                    <li>Providing feedback for improvements</li>
+                    <li>Donating to help cover hosting costs</li>
+                </ul>
+                <button id="close-popup" class="button">Close</button>
+            </div>
+        </div>    
+
+    <script>
+        const apiKey = '2774ac51a8f0559456a610e393566a11'; // Replace with your actual TMDB API key
+        const movieInfoDiv = document.getElementById('movie-info');
+        const overlay = document.getElementById('overlay');
+        const supportButton = document.getElementById('support-button');
+        const closePopupButton = document.getElementById('close-popup');
+
+        document.getElementById('get-movie').addEventListener('click', getRandomMovie);
+        supportButton.addEventListener('click', () => {
+            overlay.style.display = 'flex';
+        });
+        closePopupButton.addEventListener('click', () => {
+            overlay.style.display = 'none';
+        });
+
+        async function getRandomMovie() {
+            try {
+                // Get a random page of popular movies
+                const randomPage = Math.floor(Math.random() * 500) + 1; // TMDB has 500 pages of popular movies
+                const response = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&page=${randomPage}`);
+                const data = await response.json();
+
+                // Pick a random movie from the results
+                const randomMovie = data.results[Math.floor(Math.random() * data.results.length)];
+
+                // Display movie information
+                movieInfoDiv.innerHTML = `
+                    <h2>${randomMovie.title}</h2>
+                    <img src="https://image.tmdb.org/t/p/w500${randomMovie.poster_path}" width="200" height="300" alt="${randomMovie.title} poster">
+                    <p><strong>Release Date:</strong> ${randomMovie.release_date}</p>
+                    <p><strong>Overview:</strong> ${randomMovie.overview}</p>
+                    <p><strong>Rating:</strong> ${randomMovie.vote_average}/10</p>
+                `;
+            } catch (error) {
+                console.error('Error fetching movie:', error);
+                movieInfoDiv.innerHTML = '<p>Error fetching movie. Please try again.</p>';
+            }
+        }
+    </script>
+</body>
+</html>
