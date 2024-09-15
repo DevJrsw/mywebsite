@@ -59,6 +59,10 @@
 <body>
     <div class="container">
         <h1>What movie should I watch?</h1>
+        <div>
+        <select id="genre-select">
+            <option value="">All Genres</option>
+        </select>
         <button id="get-movie" class="button">Get Random Movie </button>
         <button id="support-button" class="button">Support Me</button>
         <div id="movie-info"></div>
@@ -82,12 +86,13 @@
             Copyright &copy; Dev Jrsw
         </footer>
 
-    <script>
+       <script>
         const apiKey = '2774ac51a8f0559456a610e393566a11'; // Replace with your actual TMDB API key
         const movieInfoDiv = document.getElementById('movie-info');
         const overlay = document.getElementById('overlay');
         const supportButton = document.getElementById('support-button');
         const closePopupButton = document.getElementById('close-popup');
+        const genreSelect = document.getElementById('genre-select');
 
         document.getElementById('get-movie').addEventListener('click', getRandomMovie);
         supportButton.addEventListener('click', () => {
@@ -97,10 +102,28 @@
             overlay.style.display = 'none';
         });
 
+        async function fetchGenres() {
+            try {
+                const response = await fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${apiKey}`);
+                const data = await response.json();
+                data.genres.forEach(genre => {
+                    const option = document.createElement('option');
+                    option.value = genre.id;
+                    option.textContent = genre.name;
+                    genreSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error fetching genres:', error);
+            }
+        }
+
         async function getRandomMovie() {
             try {
+                const selectedGenre = genreSelect.value;
                 const randomPage = Math.floor(Math.random() * 500) + 1;
-                const response = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&page=${randomPage}`);
+                const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&page=${randomPage}&sort_by=popularity.desc${selectedGenre ? `&with_genres=${selectedGenre}` : ''}`;
+                
+                const response = await fetch(url);
                 const data = await response.json();
                 const randomMovie = data.results[Math.floor(Math.random() * data.results.length)];
 
@@ -112,7 +135,7 @@
                 const cast = castData.cast.slice(0, 5).map(actor => actor.name).join(', ');
                 const providers = watchProviders.results.US?.flatrate || [];
                 const streamingInfo = providers.length > 0 
-                    ? `Available on: ${providers.map(p => p.provider_name).join(', ')}`
+                    ? providers.map(p => p.provider_name).join(', ')
                     : 'Streaming information not available';
 
                 movieInfoDiv.innerHTML = `
@@ -130,6 +153,8 @@
                 movieInfoDiv.innerHTML = '<p>Error fetching movie. Please try again.</p>';
             }
         }
+
+        fetchGenres();
     </script>
 </body>
 </html>
